@@ -1,33 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import Form from './components/Form'
+import Card from './components/Card'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [notes, setNotes] = useState()
+  const queryClient = useQueryClient();
+  const { isLoading, error, data, refetch } = useQuery({
+    queryKey: ['notes'],
+    queryFn: async () => {
+      const result = await fetch('http://localhost:5000/api/notes');
+      const data = await result.json();
+
+      return data
+    }
+
+  })
+
+  const mutation = useMutation({
+    mutationFn: async (id) => {
+      await fetch(`http://localhost:5000/api/notes/${id}`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch
+      // queryClient.setQueryData(notes, newNotes)
+      // refetch()
+      // queryClient.invalidateQueries("notes");
+      return queryClient.invalidateQueries(['notes'])
+    },
+  });
+
+
+
+  if (isLoading) return 'Loading...'
+
+  if (error) return 'An error has occurred: ' + error.message
+
+
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className='max-w-100vh flex'>
+
+        <div className='w-1/4'>
+
+          <Form />
+        </div>
+
+        <div className='grid  grid-cols-3  gap-4 w-3/4'>
+
+          {
+            data.map((item, index) => (
+
+              <Card key={index} item={item} mutation={mutation} />
+
+            )
+
+
+
+            )
+          }
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
