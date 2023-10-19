@@ -27,10 +27,10 @@ const Form = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (title && description) {
 
-        console.log(title)
-        console.log(description)
-        mutation.mutate({ title, description })
+            mutation.mutate({ title, description })
+        }
         setTitle("")
         setDescription("")
 
