@@ -7,12 +7,18 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
+import { Provider } from 'react-redux'
+import store from './store.js'
 const queryClient = new QueryClient()
+
 ReactDOM.createRoot(document.getElementById('root')).render(
 
   <QueryClientProvider client={queryClient}>
 
-    <App />
+    <Provider store={store}>
+
+      <App />
+    </Provider>
   </QueryClientProvider>
 
 )
