@@ -1,26 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
+import { useCreateNotesMutation, useGetAllNotesQuery } from '../slices/notesApiSlice';
 
 const Form = () => {
-    const queryClient = useQueryClient();
 
-    const mutation = useMutation({
-        mutationFn: async (newNote) => {
-            return fetch("http://localhost:5000/api/notes", {
-                method: "POST",
-                headers: {
-                    'Content-Type': "application/json"
-                },
-                body: JSON.stringify(newNote)
-            }).then((res) => res.json())
-        },
-        onSuccess: () => {
-            // Invalidate and refetch
-            queryClient.invalidateQueries(["notes"])
-        },
-    })
-
-
+    const [createNotes, { isLoading: loadingCreateProduct }] = useCreateNotesMutation()
+    const { data, refetch, isLoading, error } = useGetAllNotesQuery()
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -29,7 +14,15 @@ const Form = () => {
         e.preventDefault();
         if (title && description) {
 
-            mutation.mutate({ title, description })
+
+
+            try {
+                await createNotes({ title, description })
+                refetch()
+            } catch (error) {
+                console.log(error)
+            }
+
         }
         setTitle("")
         setDescription("")
