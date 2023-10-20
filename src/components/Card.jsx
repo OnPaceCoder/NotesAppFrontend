@@ -1,29 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import { useDeleteNotesMutation, useGetAllNotesQuery, useUpdateNotesMutation } from '../slices/notesApiSlice';
 
-const Card = ({ item, data, mutation }) => {
+const Card = ({ item }) => {
+    const [deleteNotes] = useDeleteNotesMutation();
+    const { data, refetch, isLoading, error } = useGetAllNotesQuery()
 
+    const [updateNotes, { isLoading: loadingNotes }] = useUpdateNotesMutation();
 
-    const queryClient = useQueryClient();
-
-
-    const mutationUpdate = useMutation({
-        mutationFn: async (newNote) => {
-            return fetch(`http://localhost:5000/api/notes/${item._id}`, {
-                method: "PUT",
-                headers: {
-                    'Content-Type': "application/json"
-                },
-                body: JSON.stringify(newNote)
-            }).then((res) => res.json())
-        },
-        onSuccess: (newNotes) => {
-
-            // Invalidate and refetch
-            queryClient.setQueryData(notes, newNotes)
-            // queryClient.invalidateQueries("notes")
-        },
-    })
 
     const [editMode, setEditMode] = useState(false);
     const [title, setTitle] = useState(item.title || "");
@@ -41,13 +24,13 @@ const Card = ({ item, data, mutation }) => {
         setEditMode(true);
     };
 
-    const handleDeleteClick = () => {
+    const handleDeleteClick = async () => {
+        await deleteNotes(item._id)
 
-        mutation.mutate(item._id)
     }
-    const handleUpdateClick = (event) => {
+    const handleUpdateClick = async (event) => {
         event.preventDefault();
-        mutationUpdate.mutate({ title, description })
+        await updateNotes({ title, description, id: item._id }).unwrap()
         setEditMode(false)
     };
 
