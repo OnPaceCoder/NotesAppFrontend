@@ -1,43 +1,13 @@
 import { useEffect, useState } from 'react'
 import Form from './components/Form'
 import Card from './components/Card'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
+import { useGetAllNotesQuery } from './slices/notesApiSlice'
 
 function App() {
 
   const [notes, setNotes] = useState()
-  const queryClient = useQueryClient();
-  const { isLoading, error, data, refetch } = useQuery({
-    queryKey: ['notes'],
-    queryFn: async () => {
-      const result = await fetch('http://localhost:5000/api/notes');
-      const data = await result.json();
 
-      return data
-    }
-
-  })
-
-  const mutation = useMutation({
-    mutationFn: async (id) => {
-      await fetch(`http://localhost:5000/api/notes/${id}`, {
-        method: "DELETE",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    },
-    onSuccess: () => {
-      // Invalidate and refetch
-      // queryClient.setQueryData(notes, newNotes)
-      // refetch()
-      // queryClient.invalidateQueries("notes");
-      return queryClient.invalidateQueries(['notes'])
-    },
-  });
-
-
+  const { data, refetch, isLoading, error } = useGetAllNotesQuery()
 
   if (isLoading) return 'Loading...'
 
@@ -59,7 +29,7 @@ function App() {
           {
             data.map((item, index) => (
 
-              <Card key={index} item={item} mutation={mutation} />
+              <Card key={index} item={item} />
 
             )
 
